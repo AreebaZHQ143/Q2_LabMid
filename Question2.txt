@@ -1,0 +1,68 @@
+using System;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+
+class Program
+{
+    // Define a structure to store token details
+    struct Token
+    {
+        public string VariableName;     // Stores variable name (e.g., a1, b2)
+        public string SpecialCharacter; // Stores special character from the value
+        public string Type;             // Token type (e.g., Identifier)
+    }
+
+    static void Main()
+    {
+        // Prompt the user to enter code
+        Console.WriteLine("Enter your code in mini-language (e.g., var a1 = 12@; float b2 = 3.14$$;)");
+        string userInput = Console.ReadLine(); // Read user input
+
+        // Regular Expression Pattern:
+        // (var|float)\s+       => Match 'var' or 'float' followed by spaces
+        // ([abc]\w*\d)         => Match variable names starting with a/b/c and ending with a digit
+        // \s*=\s*              => Match '=' with optional spaces around it
+        // .*?([\W_]+)          => Non-alphanumeric characters in value (special characters)
+        // ;                    => End of statement
+        string regexPattern = @"(var|float)\s+([abc]\w*\d)\s*=\s*.*?([\W_]+);";
+
+        // Find all matches based on the pattern
+        MatchCollection foundMatches = Regex.Matches(userInput, regexPattern);
+
+        // Create a list to store valid tokens
+        List<Token> extractedTokens = new List<Token>();
+
+        // Loop through each match and extract values
+        foreach (Match match in foundMatches)
+        {
+            string variable = match.Groups[2].Value;         // Extract variable name
+            string special = match.Groups[3].Value;          // Extract special character(s)
+
+            // Add extracted values to token list
+            extractedTokens.Add(new Token
+            {
+                VariableName = variable,
+                SpecialCharacter = special,
+                Type = "Identifier" // Fixed type for all tokens
+            });
+        }
+
+        // Output table header
+        Console.WriteLine("\n{0,-10} | {1,-15} | {2}", "VarName", "SpecialSymbol", "Token Type");
+        Console.WriteLine(new string('-', 45));
+
+        // Check if any tokens were extracted
+        if (extractedTokens.Count == 0)
+        {
+            Console.WriteLine("No valid tokens found."); // Show message if nothing matched
+        }
+        else
+        {
+            // Loop through each token and display it
+            foreach (var token in extractedTokens)
+            {
+                Console.WriteLine($"{token.VariableName,-10} | {token.SpecialCharacter,-15} | {token.Type}");
+            }
+        }
+    }
+}
